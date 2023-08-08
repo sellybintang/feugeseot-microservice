@@ -1,13 +1,12 @@
 const {Cars}= require('../models')
 
-
 // create new cars
 const createCars = async(req,res)=>{
     try{
         const nameCar = await Cars.findOne({where:{name:req.body.name}})
         if (nameCar){
             if(nameCar.car_type !== req.body.car_type)
-            res.status (401).json({
+            return res.status (401).json({
                 status:'Failed',
                 message:'Sorry, your type have been used'   
             })
@@ -27,13 +26,37 @@ const createCars = async(req,res)=>{
     }
 };
 
+    
+
 const readCars = async(req,res)=>{
     try{
-        const readAllCars= await Cars.findAll()
-        res.status(200).json({
-            status:'Succesfully',
-            message:'Succesfully for Read data', readAllCars
-        })
+        const Url = "http://localhost:8080/carsService/readCars"
+        const page = parseInt(req.query.page) ||1;
+        const perPage = parseInt(req.query.perPage)||10
+        const offset = (page-1)*perPage;
+        const nextPage = page+1
+        let nextPageUrl = null
+        const {rows, count}= await Cars.findAndCountAll({
+            perPage,
+            offset
+        });
+
+        const totalPages =Math.ceil(count/perPage)
+        if(totalPages<=nextPage){
+            nextPageUrl = (`${Url}?page=${nextPage}&perPage=${perPage}`)
+        }
+        
+        if(rows.length>0){
+            return res.status(200).json({
+                status:'Succesfully',
+                message:'Succesfully for Read data',
+                data:rows,
+                totalCount: count,
+                currentPage: page, 
+                totalPages,
+                nextPageUrl
+            })
+        }
     }catch(err){
         res.status(500).json({
             status:'Failed',
@@ -45,6 +68,13 @@ const readCars = async(req,res)=>{
 const updateCars = async(req,res)=>{
     try{
         const id = req.params.id;
+        const v_id= await Cars.findOne({where:{id}})
+        if(!v_id){
+            return res.status(401).json({
+                status:'Failed',
+                message:'id not found'
+            })
+        }
         const updateDataCars = await Cars.update(req.body,{where:{id}});
         res.status(200).json({
             status:'Succes',
@@ -63,7 +93,7 @@ const deleteCars = async(req,res)=>{
         const id = req.params.id;
         const v_id= await Cars.findOne({where:{id}})
         if(!v_id){
-            res.status(401).json({
+            return res.status(401).json({
                 status:'Failed',
                 message:'id not found'
             })
@@ -74,15 +104,15 @@ const deleteCars = async(req,res)=>{
             status:'Succes',
             message:'Data have been deleted', deleteDataCars
         })
-    }catch{
+    }catch(err){
         res.status(500).json({
             status:'Succes',
-            message:'Data fail to deleted'
+            message:err.message
         })
     }
 };
 
-const searchCars = async (req, res) =>{
+const searchCarsService = async (req, res) =>{
     try{
         const {
             car_type,
@@ -108,5 +138,5 @@ module.exports={
     readCars,
     updateCars,
     deleteCars,
-    searchCars
+    searchCarsService
 }

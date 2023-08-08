@@ -1,7 +1,7 @@
 /carsService/node_modules
 /trucksService/node_modules
 carsService/node_modules/
-orchestrator/node_modules/
+orchestrator/Feugeseot_Microservice/node_modules/
 trucksService/node_modules/
 carsService/.env/
 orchestrator/.env/

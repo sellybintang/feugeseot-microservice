@@ -32,9 +32,9 @@ apiEndpoints:
   readCars:
     paths: '/carsService/readCars'
   updateCars:
-    paths: '/carsService/updateCars'
+    paths: '/carsService/updateCars/:id'
   deleteCars:
-    paths: '/carsService/deleteCars'
+    paths: '/carsService/deleteCars/:id'
 
 # Trucks Service
   createTrucks:
@@ -42,13 +42,22 @@ apiEndpoints:
   readTrucks:
     paths: '/trucksService/readTrucks'
   updateTrucks:
-    paths: '/trucksService/updateTrucks'
+    paths: '/trucksService/updateTrucks/:id'
   deleteTrucks:
-    paths: '/trucksService/deleteTrucks'
+    paths: '/trucksService/deleteTrucks/:id'
 
 # Search Service
-  searchService:
+  # searchCarsService:
+  #   paths: '/searchService'
+  # searchTrucksService:
+  #   paths: '/searchService/'
+
+  searchAll:
     paths: '/searchService'
+    methods: ['GET']
+    policies:
+      - aggregated-search-policy
+
 
 
 
@@ -61,6 +70,7 @@ policies:
   - oauth2
   - proxy
   - rate-limit
+  - aggregated-search-policy
 pipelines:
   default:
     apiEndpoints:
@@ -181,9 +191,9 @@ pipelines:
 
 # Search service
 
-searchService:
+searchTrucksService:
     apiEndpoints:
-      - searchService
+      - searchAll
     policies:
       - cors:
           - action:
@@ -191,5 +201,36 @@ searchService:
               methods: 'GET'
       - proxy:
           action:
-            serviceEndpoint: trucksService, carsService
+            serviceEndpoint: truckService
             changeOrigin: true
+      - proxy:
+          action:
+            serviceEndpoint: carsService
+            changeOrigin: true
+      - expression:
+          action:
+            javascript: |
+              const results = [];
+              if (context.state['carsService'] && context.state['carsService'].response) {
+                results.push(...context.state['carsService'].response.data);
+              }
+              if (context.state['trucksService'] && context.state['trucksService'].response) {
+                results.push(...context.state['trucksService'].response.data);
+              }
+              context.response.status = 200;
+              context.response.data = results;
+              context.response.headers['content-type'] = 'application/json';
+      
+
+# searchCarsService:
+#     apiEndpoints:
+#       - searchCarsService
+#     policies:
+#       - cors:
+#           - action:
+#               origin: '*'
+#               methods: 'GET'
+#       - proxy:
+#           action:
+#             serviceEndpoint: carsService
+#             changeOrigin: true
