@@ -1,4 +1,5 @@
 const {Trucks} = require ('../models')
+const {Op}= require('sequelize')
 
 // Create Trucks
 
@@ -41,7 +42,7 @@ const readTrucks = async (req,res) =>{
         const offset = (page-1)*perPage;
         const nextPage = page+1
         let nextPageUrl = null
-        const {rows, count}= await Cars.findAndCountAll({
+        const {rows, count}= await Trucks.findAndCountAll({
             perPage,
             offset
         });
@@ -121,20 +122,25 @@ const deleteTrucks =async (req, res)=>{
 
 const searchTrucks = async (req, res) =>{
     try{
-        const {
-            name,
-            code,
-            number_of_gears,
-            number_of_tires}=req.body
-        const searchDataTrucks = await Trucks.findAll({name:name, code:code, number_of_gears:number_of_gears, number_of_tires:number_of_tires})
-        res.status(401).json({
+        const {name } = req.body
+        const searchDataTrucks = await Trucks.findAll({where:{
+            name:name,
+        }
+        })
+        if (!searchDataTrucks.name){
+            return res.status(401).json({
+                message:'Sorry your data is not found'
+            })
+        }
+
+        res.status(200).json({
             status:'Succes',
             message:'Data succes searched', searchDataTrucks
         })
-    }catch{
+    }catch(err){
         res.status(500).json({
             status:'Failed',
-            message:'Data failed to search'
+            message:err.message
         });
     }
 }

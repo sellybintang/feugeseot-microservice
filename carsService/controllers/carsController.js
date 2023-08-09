@@ -120,15 +120,21 @@ const searchCarsService = async (req, res) =>{
             code,
             number_of_gears,
             number_of_tires}=req.body
-        const searchCars = await Cars.findAll({car_type:car_type, name:name, code:code, number_of_gears:number_of_gears, number_of_tires:number_of_tires})
-        res.status(401).json({
+        const searchCars = await Cars.findAll({ name:name})
+        
+        if (!searchCars.name){
+            return res.status(401).json({
+                message:'Sorry your data is not found'
+            })
+        };
+        res.status(200).json({
             status:'Succes',
             message:'Data succes searched', searchCars
         })
     }catch{
         res.status(500).json({
             status:'Failed',
-            message:'Data failed to search', searchCars
+            message:'Data failed to search'
         });
     }
 }

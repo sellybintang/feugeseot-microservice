@@ -6,4 +6,5 @@ trucksService/node_modules/
 carsService/.env/
 orchestrator/.env/
 trucksService/.env/
+orchestrator/Orchestratorr/node_modules/
 

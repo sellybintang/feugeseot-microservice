@@ -4,5 +4,5 @@ const trucksRoutes = require ('./trucksRoutes');
 
 router.use('/trucksService', trucksRoutes)
 // Search
-router.use ('/searchService', searchTrucks);
+// router.use ('/searchService', searchTrucks);
 module.exports = router

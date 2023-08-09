@@ -1,0 +1,247 @@
+http:
+  port: 8080
+admin:
+  port: 9876
+  host: localhost
+
+# Service Endpoint
+serviceEndpoints:
+  httpbin:
+    url: 'https://httpbin.org'
+
+  # Cars Service
+  carsService:
+    url: 'http://localhost:3005/'
+
+  # Trucks Service
+  trucksService:
+    url: 'http://localhost:3006/'
+  #
+  searchService:
+    url: 'http://localhost:3007/'
+
+
+# API Endpoint
+apiEndpoints:
+  api:
+    host: localhost
+    paths: '/ip'
+# Cars Service
+  createCars:
+    paths: '/carsService/createCars'
+  readCars:
+    paths: '/carsService/readCars'
+  updateCars:
+    paths: '/carsService/updateCars/:id'
+  deleteCars:
+    paths: '/carsService/deleteCars/:id'
+
+# Trucks Service
+  createTrucks:
+    paths: '/trucksService/createTrucks'
+  readTrucks:
+    paths: '/trucksService/readTrucks'
+  updateTrucks:
+    paths: '/trucksService/updateTrucks/:id'
+  deleteTrucks:
+    paths: '/trucksService/deleteTrucks/:id'
+
+# Search Service
+  # searchCarsService:
+  #   paths: '/searchService'
+  # searchTrucksService:
+  #   paths: '/searchService/'
+
+  # searchAll:
+  #   paths: '/searchService'
+  #   methods: ['GET']
+  #   policies:
+  #     - aggregated-search-policy
+
+
+# apiEndpoints:
+#   - name: combine-services
+#     paths: '/combine-services'
+#     methods: ['GET']
+#     policies:
+#       - combine-services-policy
+
+policies:
+  - aggregated-search-policy ../agregation/index.js
+  - basic-auth
+  - cors
+  - expression
+  - key-auth
+  - log
+  - oauth2
+  - proxy
+  - rate-limit
+  
+  
+pipelines:
+  default:
+    apiEndpoints:
+      - api
+    policies:
+    # Uncomment `key-auth:` when instructed to in the Getting Started guide.
+    # - key-auth:
+      - proxy:
+          - action:
+              serviceEndpoint: httpbin 
+              changeOrigin: true
+
+  # Cars Service
+  createCars:
+    apiEndpoints:
+      - createCars
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'POST'
+      - proxy:
+          action:
+            serviceEndpoint: carsService 
+            changeOrigin: true
+
+  readCars:
+    apiEndpoints:
+      - readCars
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET'
+      - proxy:
+          action:
+            serviceEndpoint: carsService 
+            changeOrigin: true
+
+  updateCars:
+    apiEndpoints:
+      - updateCars 
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'UPDATE'
+      - proxy:
+          action:
+            serviceEndpoint: carsService 
+            changeOrigin: true
+  deleteCars:
+    apiEndpoints:
+      - deleteCars
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'DELETE'
+      - proxy:
+          action:
+            serviceEndpoint: carsService 
+            changeOrigin: true
+ 
+
+# TrucksService
+  createTrucks:
+    apiEndpoints:
+      - createTrucks
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'POST'
+      - proxy:
+          action:
+            serviceEndpoint: trucksService 
+            changeOrigin: true
+
+  readTrucks:
+    apiEndpoints:
+      - readTrucks
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET'
+      - proxy:
+          action:
+            serviceEndpoint: trucksService 
+            changeOrigin: true
+
+  updateTrucks:
+    apiEndpoints:
+      - updateTrucks 
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'PATCH'
+      - proxy:
+          action:
+            serviceEndpoint: trucksService 
+            changeOrigin: true
+
+  deleteTrucks:
+    apiEndpoints:
+      - deleteTrucks
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'DELETE'
+      - proxy:
+          action:
+            serviceEndpoint: trucksService 
+            changeOrigin: true
+
+# Search service
+
+# searchTrucksService:
+#     apiEndpoints:
+#       - searchAll
+#     policies:
+#       - cors:
+#           - action:
+#               origin: '*'
+#               methods: 'GET'
+#       - proxy:
+#           action:
+#             serviceEndpoint: truckService
+#             changeOrigin: true
+#       - proxy:
+#           action:
+#             serviceEndpoint: carsService
+#             changeOrigin: true
+      # - mix-data-policy: # Nama kebijakan yang akan Anda gunakan
+      #     - action:
+      #         javascript: |
+      #           const axios = require('axios');
+      #           const serviceAData = await axios.get('http://localhost:3005/carsService');
+      #           const serviceBData = await axios.get('http://localhost:3006/trucksService');
+
+      #           const combinedData = {
+      #             carsService: serviceAData.data,
+      #             truckService: serviceBData.data
+      #           };
+
+      #           context.response.status = 200;
+      #           context.response.data = combinedData;
+      #           context.response.headers['content-type'] = 'application/json';
+          
+
+searchCarsService:
+    apiEndpoints:
+      - searchCarsService
+    policies:
+      - cors:
+          - action:
+              origin: '*'
+              methods: 'GET'
+      - proxy:
+          action:
+            serviceEndpoint: carsService
+            changeOrigin: true
+
+
